@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 
 // Models
 const User = require("./models/user")
+const Video = require('./models/video')
 
 // Middleware
 const auth = require('./middleware/auth')
@@ -68,16 +69,33 @@ app.post("/login", async (req, res) => {
                 { user_id: user._id, email },
                 process.env.TOKEN_KEY,
                 {
-                    expiresIn: "2h",
+                    expiresIn: "2h ",
                 }
             );
 
             // save user token
             user.token = token;
             // return user
-            return res.status(200).json(user);
+            return res.status(201).json(user)
         }
         return res.status(400).json("Invalid Credentials");
+    } catch (error) {
+        console.log(error.message)
+        return res.status(500).json({ message: error.message })
+    }
+})
+
+app.post('/saveVideo', auth, async (req, res) => {
+    try {
+        const { name, format, file_path, userID } = req.body
+
+        const video = await Video.create({
+            name,
+            format,
+            file_path,
+            userID
+        })
+        return res.status(200).json(video);
     } catch (error) {
         console.log(error.message)
         return res.status(500).json({ message: error.message })
